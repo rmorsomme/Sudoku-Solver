@@ -2,8 +2,9 @@
 title: "Sudoku"
 author: "Raphaël Morsomme"
 date: "`r Sys.Date()`"
-output: 
-  github_document
+output:
+  github_document:
+    toc: TRUE
 ---
 
 # Introduction

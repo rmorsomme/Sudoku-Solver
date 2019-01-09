@@ -3,6 +3,28 @@ Sudoku
 Raphaël Morsomme
 2019-01-09
 
+-   [Introduction](#introduction)
+-   [Representations](#representations)
+    -   [`grid`](#grid)
+    -   [`poss`](#poss)
+-   [Solving a Sudoku](#solving-a-sudoku)
+    -   [Pseudo-code](#pseudo-code)
+    -   [Updating `poss`](#updating-poss)
+        -   [Cell by cell](#cell-by-cell)
+        -   [Row by row, column by column and box by box](#row-by-row-column-by-column-and-box-by-box)
+        -   [`update_poss()`](#update_poss)
+    -   [Updating `grid`](#updating-grid)
+        -   [Cell by cell](#cell-by-cell-1)
+        -   [Row by row, column by column and box by box](#row-by-row-column-by-column-and-box-by-box-1)
+        -   [`update_grid()`](#update_grid)
+    -   [Solving our first sudoku](#solving-our-first-sudoku)
+-   [Algorithm stuck? Take a guess!](#algorithm-stuck-take-a-guess)
+    -   [Taking a guess](#taking-a-guess)
+    -   [Checking a grid](#checking-a-grid)
+    -   [Solving Sudoku (with guess)](#solving-sudoku-with-guess)
+    -   [Testing the algorithm: extreme cases](#testing-the-algorithm-extreme-cases)
+-   [Conclusion](#conclusion)
+
 Introduction
 ============
 
