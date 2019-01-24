@@ -1,7 +1,7 @@
 Sudoku
 ================
 Raphaël Morsomme
-2019-01-10
+2019-01-24
 
 -   [Introduction](#introduction)
 -   [Representations](#representations)
@@ -32,12 +32,16 @@ library(tidyverse)
 Introduction
 ============
 
-This is a short script presenting a simple algorithm to solve any sudoku grid in a very fast manner.
+This is a short script presenting a simple algorithm to solve any sudoku grid in a very fast manner. It follows two very simple principles:
+
+1.  If there is only one value left to fill a cell, fill the cell with it.
+
+2.  If a value has only one possible location left in a row, column or box, write it there.
 
 Representations
 ===============
 
-The matrix `grid` and the array `poss` are the building blocks of the script.
+The matrix `grid` and the three-dimensional array `poss` are the building blocks of the algorithm.
 
 `grid`
 ------
@@ -92,7 +96,7 @@ print(grid_wiki)
 `poss`
 ------
 
-`poss` is a 3-dimensional logical array indicating the values with which we could fill the cells of the sudoku grid. Its rows (first dimension) and columns (second dimension) correspond to the rows and column of the sudoku grid, and its layers (third dimension) to the nine possible value (1, 2, 3, 4, 5, 6, 7, 8, 9) each cell can potential take (excluding `0`). The logical entry *poss<sub>i,j,n</sub>* of `poss` indicates whether the number *n* could be used to fill the cell on row *i* and column *j* of the sudoku grid. We create the function `create_poss()` for convenience.
+`poss` is a three-dimensional logical array indicating the values with which the cells of the sudoku grid could be filled. Its rows (first dimension) and columns (second dimension) correspond to the rows and column of the sudoku grid, and its layers (third dimension) to the nine possible value (1, 2, 3, 4, 5, 6, 7, 8, 9) each cell can potential take (excluding `0`). The logical entry *poss<sub>i,j,n</sub>* of `poss` indicates whether the number *n* could be used to fill the cell on row *i* and column *j* of the sudoku grid. We create the function `create_poss()` for convenience.
 
 ``` r
 create_poss <- function() array(T, dim = c(9,9,9), dimnames = list(1:9, 1:9, 1:9))
@@ -118,15 +122,15 @@ To solve a sudoku, we iteratively update `grid` and `poss` until `grid` has no e
 Updating `poss`
 ---------------
 
-We start with `poss` which we update in `4` different ways: cell-wise, row-wise, column-wise and box-wise (boxes are the three-by-three subgrids of the main sudoku grid), following two principles:
+We start with `poss` which we update in four different ways: cell-wise, row-wise, column-wise and box-wise (boxes are the three-by-three subgrids of the main sudoku grid), following two principles:
 
 -   Principle 1: a cell can only have one value.
 
--   Principle 2: a row/column/box contains a value exactly once.
+-   Principle 2: a row/column/box contains each value exactly once.
 
 ### Cell by cell
 
-Following principle 1, if a cell *cell<sub>i,j</sub>* is filled with a value, then no other value can be used to fill it. Consequently, we set the entries of `poss` *poss<sub>i,j,n</sub>* corresponding to *cell<sub>i,j</sub>* to `FALSE` for all *n*. The function `update_poss_cell()` accomplishes this. It first finds the locations of nonempty cells and assigns them to `non_empty` before updating `poss` and returning `poss`. (We use `rep()` on `non_empty` to match the dimensions of `poss`).
+Following principle 1, if a cell *cell<sub>i,j</sub>* is filled with a value, then no other value can be used to fill *cell<sub>i,j</sub>*. Consequently, we set the entries of `poss` *poss<sub>i,j,n</sub>* corresponding to *cell<sub>i,j</sub>* to `FALSE` for all *n*. The function `update_poss_cell()` accomplishes this. It first finds the locations of nonempty cells and assigns them to `non_empty` before updating `poss` and returning `poss`. (We use `rep()` on `non_empty` to match the dimensions of `poss`).
 
 ``` r
 update_poss_cell <- function(poss, grid){
