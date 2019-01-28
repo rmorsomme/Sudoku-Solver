@@ -17,12 +17,12 @@ Raphaël Morsomme
         -   [Cell by cell](#cell-by-cell-1)
         -   [Row by row, column by column and box by box](#row-by-row-column-by-column-and-box-by-box-1)
         -   [The function `update_grid()`](#the-function-update_grid)
-    -   [Solving our first sudoku](#solving-our-first-sudoku)
+    -   [Solving our first sudoku grid](#solving-our-first-sudoku-grid)
     -   [More complex cases](#more-complex-cases)
 -   [Algorithm stuck? Take a guess!](#algorithm-stuck-take-a-guess)
     -   [Taking a guess](#taking-a-guess)
     -   [Checking a grid](#checking-a-grid)
-    -   [Solving sudoku (with guess)](#solving-sudoku-with-guess)
+    -   [Solving a sudoku grid with guess](#solving-a-sudoku-grid-with-guess)
     -   [Testing the algorithm: extreme cases](#testing-the-algorithm-extreme-cases)
 -   [Conclusion](#conclusion)
 
@@ -33,9 +33,9 @@ library(tidyverse)
 Introduction
 ============
 
-This is a short script presenting a simple algorithm to solve any sudoku grid in a very fast manner. It follows four very simple principles:
+This is a short script presenting a simple algorithm to solve any sudoku grid in a very fast manner. The algorithm follows four very simple principles:
 
--   Principle 1: A cell can only have one value.
+-   Principle 1: A cell has exactly one value.
 
 -   Principle 2: A row/column/box contains each value exactly once.
 
@@ -43,7 +43,7 @@ This is a short script presenting a simple algorithm to solve any sudoku grid in
 
 -   Principle 4: If a value has only one location available in a row/column/box, write it there.
 
-It turns out that these four principles are sufficient to solve most grid. When these principles are not sufficient, guessing the value of a cell *once* is sufficient to be able to solve the grid.
+It turns out that these four principles are sufficient to solve most sudoku grid. When this is not the case, we just need to guess the value of an empty cell *once* to be able to solve the grid.
 
 Representations
 ===============
@@ -53,11 +53,11 @@ The matrix `grid` and the three-dimensional array `poss` are the building blocks
 The object `grid`
 -----------------
 
-The numerical matrix `grid` represents the sudoku grid. Its rows and columns correspond to the rows and columns of the sudoku grid, and its entries indicate the value of the corresponding cell in the sudoku grid. Empty cells are represented with a `0`. For convenience, we create the function `create_grid()`, which given a vector of `81` number, returns the corresponding `grid`.
+The numerical matrix `grid` represents the sudoku grid. Its rows and columns correspond to the rows and columns of the sudoku grid, and its entries indicate the value of the corresponding cell in the sudoku grid. Empty cells are represented with a `0`. For convenience, we create the function `create_grid()`, which, given a vector of `81` values, returns the corresponding `grid`.
 
 ``` r
 # Function to create grid
-create_grid <- function(x)  matrix(x, ncol =  9, nrow = 9, byrow = TRUE, dimnames = list(1:9, 1:9))
+create_grid <- function(grid)  matrix(grid, ncol = 9, nrow = 9, byrow = TRUE, dimnames = list(1:9, 1:9))
 
 # Sudoku grid from english Wikipedia page on sudoku (a 0 indicates an empty cell)
 grid_wiki <- create_grid(c(5,3,0,0,7,0,0,0,0,
@@ -86,13 +86,28 @@ print(grid_wiki)
 The object `poss`
 -----------------
 
-The three-dimensional logical array `poss` indicates which values are available to fill the cells of the sudoku grid. Its rows (first dimension) and columns (second dimension) correspond to the rows and column of the sudoku grid, and its layers (third dimension) to the nine possible values (1, 2, 3, 4, 5, 6, 7, 8, 9) available to fill a cell (excluding `0`). The logical entry *poss<sub>i,j,n</sub>* of `poss` indicates whether the number *n* could be used to fill the cell on row *i* and column *j* of the sudoku grid. We create the function `create_poss()` for convenience.
+The three-dimensional logical array `poss` indicates which values are available to fill the cells of the sudoku grid. Its rows (first dimension) and columns (second dimension) correspond to the rows and column of the sudoku grid, and its layers (third dimension) to the nine values (1, 2, 3, 4, 5, 6, 7, 8, 9) available to fill the grid (excluding `0`). The logical entry *poss<sub>i,j,n</sub>* of `poss` indicates whether the number *n* could be used to fill the cell on row *i* and column *j* of the sudoku grid.
+
+The function `create_poss()` generates a `9 x 9 x 9` array of `TRUEs`.
 
 ``` r
-create_poss <- function() array(TRUE, dim = c(9,9,9), dimnames = list(1:9, 1:9, 1:9))
+create_poss <- function() array(TRUE, dim = c(9, 9, 9), dimnames = list(1:9, 1:9, 1:9))
 
 poss <- create_poss()
+
+print(poss[ , , 1])
 ```
+
+    ##      1    2    3    4    5    6    7    8    9
+    ## 1 TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+    ## 2 TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+    ## 3 TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+    ## 4 TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+    ## 5 TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+    ## 6 TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+    ## 7 TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+    ## 8 TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+    ## 9 TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
 
 Solving a sudoku
 ================
@@ -100,7 +115,7 @@ Solving a sudoku
 Pseudo-code
 -----------
 
-To solve a sudoku, we iteratively update `grid` and `poss` until `grid` has no empty cell.
+To solve a sudoku grid, we iteratively update the objects `grid` and `poss` until `grid` has no empty cell.
 
 ``` r
 #   Pseudo-code for solving a sudoku
@@ -119,9 +134,9 @@ To solve a sudoku, we iteratively update `grid` and `poss` until `grid` has no e
 Updating the object `poss`
 --------------------------
 
-We start with `poss` which we update in four different ways: cell-wise, row-wise, column-wise and box-wise (boxes are the three-by-three subgrids of the main sudoku grid), following principle 1 and principle 2:
+We start with the object `poss` which we update in four different ways: cell-wise, row-wise, column-wise and box-wise (boxes are the three-by-three subgrids of the main sudoku grid), following principle 1 and principle 2:
 
--   Principle 1: A cell can only have one value.
+-   Principle 1: A cell has exactly one value.
 
 -   Principle 2: A row/column/box contains each value exactly once.
 
@@ -134,7 +149,7 @@ update_poss_cell <- function(poss, grid){
   
   # Location of filled cells
   location_filled <- grid != 0
-  location_filled <- array(rep(location_filled, 9), dim = c(9,9,9))
+  location_filled <- array(rep(location_filled, 9), dim = c(9, 9, 9))
   
   
   # Updating poss
@@ -142,6 +157,10 @@ update_poss_cell <- function(poss, grid){
   poss           <- poss & location_empty
   
 }
+
+
+#
+# Illustration
 
 # Creating the array poss
 poss <- create_poss()
@@ -172,14 +191,18 @@ Following principle 2, if a cell *cell<sub>i,j</sub>* is filled with a value *n*
 # Row by row
 update_poss_row <- function(poss, grid){
   
-  for(row in 1:9){
+  for(row in 1 : 9){
     
-    row_grid <- grid[row, ]
+    row_grid <- grid[row, ] # row under investigation
     
-    for(n in 1:9){
+    for(n in 1 : 9){
       
-      # Check if n is present in row
-      if(any(row_grid == n)) poss[row, , n] <- FALSE
+      # If n present in row, then set corresponding entries of poss to FALSE
+      if(any(row_grid == n)){
+        
+        poss[row, , n] <- FALSE
+        
+      } 
       
     }
     
@@ -189,13 +212,17 @@ update_poss_row <- function(poss, grid){
   
 }
 
+
+#
+# Illustration
+
 # Creating the array poss
 poss <- create_poss()
 
 # Updating poss row-wise
 poss <- update_poss_row(poss, grid_wiki)
 
-# Rows containing a `1` on the sudoku grid (row 2, row 5 and row 8) are `FALSE` on layer `1` of `poss`.
+# First layer of poss: rows containing a `1` on the sudoku grid (row 2, row 5 and row 8) are `FALSE`.
 print(poss[ , , 1]) 
 ```
 
@@ -214,16 +241,12 @@ print(poss[ , , 1])
 # Column by column
 update_poss_col <- function(poss, grid){
   
-  for(col in 1:9){
+  for(col in 1 : 9){
   
     col_grid <- grid[ , col]
     
-    for(n in 1:9){
-    
-      # Check if n is present in column
-      if(any(col_grid == n)) poss[ , col, n] <- FALSE
-      
-    }
+    for(n in 1 : 9)
+      if(any(col_grid == n))  poss[ , col, n] <- FALSE
     
   }
   
@@ -242,17 +265,13 @@ update_poss_box <- function(poss, grid){
     # three rows of (three) boxes
     for(row_box in 1 : 3){
       
-      # identifying the 9 (3*3) entries of `grid` corresponding to the box
+      # identifying the (3 x 3) subgrid corresponding to the box
       rows <- 1 : 3 + 3 * (row_box - 1)
       cols <- 1 : 3 + 3 * (col_box - 1)
       box_grid <- grid[rows, cols]
       
-      for(n in 1 : 9){
-        
-        # Check if n is present in the box
+      for(n in 1 : 9)
         if(any(box_grid == n)) poss[rows, cols, n] <- FALSE
-        
-      }
       
     }
     
@@ -277,6 +296,10 @@ update_poss <- function(poss, grid){
     update_poss_box(grid)
   
 }
+
+
+#
+# Illustration
 
 # Creating poss
 poss <- create_poss()
@@ -308,7 +331,7 @@ Now that we have updated `poss`, we can use it to update `grid` following princi
 
 -   Principle 4: If a value has only one location available in a row/column/box, write it there.
 
-Similarly to how we udpate `poss`, we update `grid` cell-wise, row-wise, column-wise and box-wise. Following principle 3, the function `update_grid_cell` checks for each cell (loop) how many values are still available to fill it. If there is only one possible value, then we fill the cell with it. Following principle 4, the functions `update_grid_row`, `update_grid_col` and `update_grid_box` identify for each value 1, 2, 3, 4, 5, 6, 7, 8, 9 (loop) their possible locations in each row/column/box. If the value has only one possible location left in a row/column/box, then we fill the corresponding cell of the grid with it.
+Similarly to how we udpate `poss`, we update `grid` cell-wise, row-wise, column-wise and box-wise. Following principle 3, the function `update_grid_cell()` checks for each cell (loop) how many values are still available to fill it. If there is only one value available, then we fill the cell with it. Following principle 4, the functions `update_grid_row()`, `update_grid_col()` and `update_grid_box()` identify for each value 1, 2, 3, 4, 5, 6, 7, 8, 9 (loop) their possible locations in each row/column/box. If a value has only one location available in a row/column/box, then we write it there.
 
 ### Cell by cell
 
@@ -322,11 +345,16 @@ update_grid_cell <- function(grid, poss){
       # Check if cell is empty
       if(grid[row, col] == 0){
         
+        # Identify available values
         values_available   <- poss[row, col, ]
         n_values_available <- sum(values_available)
         
-        # check if only one value available to fill the empty cell
-        if(n_values_available == 1)  grid[row, col] <- c(1:9)[values_available]
+        # if only one value available, write it there
+        if(n_values_available == 1){
+          
+          grid[row, col] <- c(1:9)[values_available]
+          
+        }
         
       }
       
@@ -337,6 +365,10 @@ update_grid_cell <- function(grid, poss){
   return(grid)
   
 }
+
+
+#
+# Illustration
 
 # Updating the sudoku grid from wiki cell-wise
 grid_update <- update_grid_cell(grid_wiki, poss)
@@ -373,7 +405,7 @@ print(grid_update)
     ## 9 0 0 0 0 8 0 0 7 9
 
 ``` r
-# 4 entries have been filled {(5,5), (7,6), (7,9), (8,8)}
+# 4 cells have been filled {(5,5), (7,6), (7,9), (8,8)}
 sum(grid_update != grid_wiki)
 ```
 
@@ -391,7 +423,6 @@ update_grid_row <- function(grid, poss){
       locations   <- poss[row, , n]
       n_locations <- sum(locations)
       
-      # Check if only one location available for value `n` in row
       if(n_locations == 1) grid[row, locations] <- n
       
     }
@@ -413,7 +444,6 @@ update_grid_col <- function(grid, poss){
       locations   <- poss[ , col, n]
       n_locations <- sum(locations)
       
-      # Check if only one location available for value `n` in column
       if(n_locations == 1) grid[locations, col] <- n
       
     }
@@ -441,7 +471,6 @@ update_grid_box <- function(grid, poss){
         locations   <- poss[rows, cols, n]
         n_locations <- sum(locations)
         
-        # Check if only one possible location for value `n` in box
         if(n_locations == 1) grid[rows, cols][locations] <- n
         
       }
@@ -470,6 +499,10 @@ update_grid <- function(grid, poss){
   
 }
 
+
+#
+# Illustration
+
 # Updating grid
 grid_update <- update_grid(grid_wiki, poss)
 
@@ -486,8 +519,8 @@ sum(grid_update == 0)
 
     ## [1] 35
 
-Solving our first sudoku
-------------------------
+Solving our first sudoku grid
+-----------------------------
 
 Now that we are equipped with `update_poss()` and `update_grid()`, we can write a function that iteratively updates `poss` and `grid` until the sudoku grid is complete. We add a safeguard in our function to avoid the loop to continue for ever in case `update_grid()` fails to find a cell to update (which can happen for difficult grids, in which case we need to *guess* the values of a cell, see following section)
 
@@ -574,7 +607,7 @@ More complex cases
 Let us try our algorithm on a more difficult sudoku grid: a grid with only 17 starting values (minimum number of starting values necessary to have a unique solution).
 
 ``` r
-# Sparsest sudoku possible? No problem!
+# Sparsest sudoku grid possible
 x <- c(0,0,0,0,0,0,0,1,0,
        0,0,0,0,0,2,0,0,3,
        0,0,0,4,0,0,0,0,0,
@@ -585,7 +618,7 @@ x <- c(0,0,0,0,0,0,0,1,0,
        0,0,0,0,8,0,0,4,0,
        0,3,0,9,1,0,0,0,0)
 
-# Only 17 starting numbers
+# Only 17 starting values...
 sum(x != 0)
 ```
 
@@ -641,7 +674,7 @@ grid_evil <- create_grid(c(0,1,0,0,4,5,0,0,0,
                            7,0,9,0,0,0,0,0,0,
                            0,0,0,3,5,0,0,6,0))
 
-# Algorithm fails to find a cell to fill on the 5th iteration.
+# Algorithm fails to find a cell to fill on the 5th iteration...
 solve_sudoku(grid_evil)
 ```
 
@@ -659,31 +692,31 @@ When the algorithm is stuck, we need to *guess* the value of a cell.
 Taking a guess
 --------------
 
-The function `guess()` guesses the value of an empty cell. We use `guess()` when our algorithm is stuck. To minimze the risk of making a wrong guess, we identify a cell with the smallest number of values available (ideally only two values available so take we guess the right number half of the time). The function `guess()` first assigns the number of values available per cell to `n_possible`. Next, it loops through each cell to find ones that is both empty and has the minimum number of available. We fill the first cell meeting these two conditions with one of its possible values (randomly chosen). We then immediatly return the grid to minimize the risk of making a wrong guess.
+The function `guess()` guesses the value of an empty cell. We use `guess()` when our algorithm is stuck. To minimze the risk of making a wrong guess, we identify a cell with the smallest number of values available (ideally only two values available so tath we guess the right number half of the time). The function `guess()` first assigns the number of values available per cell to `n_possible`. Next, it loops through each cell to find one that is both empty and has the minimum number of values available. We fill the first cell meeting these two conditions with one of its possible values (randomly chosen), and immediatly return the grid to minimize the risk of making a wrong guess.
 
 ``` r
 guess <- function(grid, poss){
   
   # Number of values available per cell
-  n_possible       <- rowSums(poss, dims = 2)
+  n_available       <- rowSums(poss, dims = 2)
   
-  # find minimum number of values available among empty cells 
-  n_possible_empty <- n_possible[grid == 0]
-  n_min            <- min(n_possible_empty)
+  # find minimum number among empty cells 
+  n_available_empty <- n_available[grid == 0]
+  n_min             <- min(n_available_empty)
   
   for(row in 1 : 9){
     
     for(col in 1 : 9){
       
-      # find an empty cell with the minimum number of values available
+      # find a cell that is empty and has the minimum number of values available
       if(grid[row, col] == 0  &  sum(poss[row, col, ]) == n_min){
         
-        # randomly choose one of the available values and fill the cell with it.
-        values_possible <- c(1:9)[poss[row, col, ]]
-        guess           <- sample(values_possible, size = 1)
-        grid[row, col]  <- guess
+        # randomly choose one of the values available and fill the cell with it.
+        values_available <- c(1:9)[poss[row, col, ]]
+        guess            <- sample(values_available, size = 1)
+        grid[row, col]   <- guess
         
-        # return grid after first guess to minimize risk of making wrong guess
+        # return grid after first guess to minimize risk of making an error
         return(grid)
       }
     }
@@ -694,21 +727,21 @@ guess <- function(grid, poss){
 Checking a grid
 ---------------
 
-Guessing the value of a cell opens the door to errors. After we guess, we must check that the grid is still valid. Let us design a function `check_grid()` that checks if a sudoku grid is valid, using two criteria:
+Guessing the value of a cell opens the door to errors. After a guess, we must check that the grid is still valid. Let us design a function `check_grid()` that checks if a sudoku grid is valid, using two criteria:
 
-1.  each empty cell must have at least one value availble.
+Criteria 1: each empty cell must have at least one value availble.
 
-2.  each number that is not present in a row/column/box must have at least one location availble in the row/column/box.
+Criteria 2: each value that is not present in a row/column/box must have at least one location available in the row/column/box.
 
 The code of the function `check_grid()` is very similar to code of the functions `update_poss()` and `update_grid()`. If the grid satisfies the two criteria, then the function returns a `TRUE`, otherwise, it returns a `FALSE`.
 
 ``` r
 check_grid <- function(grid, poss){
 
-  #
-  # Criteria 1
   
-  # Check that each empty cell has at least one value available
+  #
+  # Criteria 1: each empty cell must have at least one value availble.
+  
   for(row in 1 : 9){
     for(col in 1 : 9){
       # If cell is empty and no value available, then grid contains an error.
@@ -718,10 +751,9 @@ check_grid <- function(grid, poss){
   
   
   #
-  # Criteria 2
+  # Criteria 2: each value not present in a row/column/box must have at least one location available in the row/column/box
   
-  # Check that each number absent from a row/column/box has at least one location available in row/column/box
-  
+  # check each row
   for(row in 1:9){
     row_grid <- grid[row, ]
     for(n in 1:9){
@@ -730,39 +762,42 @@ check_grid <- function(grid, poss){
     }
   }
 
+  # check each column
   for(col in 1:9){
     col_grid <- grid[ , col]
     for(n in 1:9){
-      # If value absent from column and no location available, then grid contains an error.
       if(all(col_grid != n)  &  all(poss[ , col, n] == FALSE))  return(FALSE)
     }
   }
 
+  # check each box
   for(col_box in 1 : 3){
     for(row_box in 1 : 3){
       rows     <- 1 : 3 + 3 * (row_box-1)
       cols     <- 1 : 3 + 3 * (col_box-1)
       box_grid <- grid[rows, cols]
       for(n in 1:9){
-        # If value absent from box and no location available, then grid contains an error.
         if(all(box_grid != n)  &  all(poss[rows, cols, n] == FALSE))  return(FALSE)
       }
     }
   }
   
-  # if all conditions satisfied, then grid is ok
+  
+  #
+  # if criteria 1 and criteria 2 are satisfied, then grid is ok
   return(TRUE)
   
 }
 ```
 
-Solving sudoku (with guess)
----------------------------
+Solving a sudoku grid with guess
+--------------------------------
 
 Let us include the functions `guess()` and `check_grid()` to our algorithm, and try to solve the "evil" grid.
 
 ``` r
 solve_sudoku <- function(grid){
+  
   
   #
   # Setup
@@ -771,11 +806,11 @@ solve_sudoku <- function(grid){
   n_wrong_guess <- 0    # keep track of number of wrong guesses
   has_guessed   <- FALSE
   
+  
   #
   # Loop
   while(any(grid == 0)){
     
-    #
     # Update grid
     grid_update <- update_grid(grid, poss)
     
@@ -786,29 +821,29 @@ solve_sudoku <- function(grid){
       
     }
     
-    #
     # Update poss
     poss <- update_poss(poss, grid_update)
 
-    #
     # check validity of grid
-    if(!check_grid(grid_update, poss)){ # If grid invalid, start over
+    if(check_grid(grid_update, poss)){ # If grid valid, continue with algorithm
+      
+      grid <- grid_update
+      
+    }else{ # else, start over
       
       grid <- grid_original
       poss <- update_poss(poss = create_poss(), grid)
       n_wrong_guess <- n_wrong_guess + 1
       
-    }else{ # else, continue with algorithm
-      
-      grid <- grid_update
-      
     }
+    
     
     #
     # Safeguard
     if(n_wrong_guess >= 100) return(print("Too many guesses: impossible grid"))
 
   } # end while-loop
+  
   
   #
   # Output
@@ -820,7 +855,7 @@ solve_sudoku <- function(grid){
 }
 ```
 
-Now, our algorithm solves the "evil" grid seamlessly. In fact, I have tried to solve numerous grids with the algorithm and always succeeded. In the worst case, the algorithm makes a few wrong guesses (usually only one or two) before solving the grid.
+Now, our algorithm solves the "evil" sudoku grid seamlessly. In fact, I have tried to solve numerous sudoku grids with the algorithm and always succeeded. In the worst case, the algorithm makes a few wrong guesses (usually only one or two) before solving the grid.
 
 ``` r
 set.seed(123)
@@ -841,7 +876,7 @@ x <- replicate(n = 10, solve_sudoku(grid_evil))
 Testing the algorithm: extreme cases
 ------------------------------------
 
-Surprisingly, even if the grid is empty, our algorithm manages to generate a valid solution very quickly. This indicates that solving sparse grids is not an issue for the algorithm.
+Surprisingly, even if the sudoku grid is empty, our algorithm manages to generate a valid solution very quickly. This indicates that solving sparse grids is not an issue for the algorithm.
 
 ``` r
 # Empty grid
@@ -861,7 +896,7 @@ x <- replicate(n = 10, solve_sudoku(grid_empty))
     ## [1] "Grid solved after 0 wrong guesses."
     ## [1] "Grid solved after 0 wrong guesses."
 
-Furthermore, if we give an impossible grid to the algorithm, the safeguard prevents the algorithm to loop forever.
+Furthermore, if we give an impossible sudoku grid to the algorithm, the safeguard prevents the algorithm from looping forever.
 
 ``` r
 # Impossible grid
@@ -890,9 +925,9 @@ solve_sudoku(grid_impossible)
 Conclusion
 ==========
 
-In this script, I develop an algorithm to solve sudoku grids that uses four very simple principles. Despite its simplicity, the algorithm can solve most sudoku grids, even the most sparse ones!
+In this script, I develop an algorithm to solve sudoku grids that uses four very simple principles.
 
--   Principle 1: A cell can only have one value.
+-   Principle 1: A cell has exactly one value.
 
 -   Principle 2: A row/column/box contains each value exactly once.
 
@@ -900,6 +935,8 @@ In this script, I develop an algorithm to solve sudoku grids that uses four very
 
 -   Principle 4: If a value has only one location available in a row/column/box, write it there.
 
+Despite its simplicity, the algorithm can solve most sudoku grids, even the most sparse ones!
+
 Yet, for difficult grids, the algorithm can get stuck. When the algorithm is stuck, we need to guess the value of a cell. I updated the original algorithm so that, when it is stuck, it guesses the value of a cell and subsequently checks the validity of the obtained grid. This version of the algorithm solves even the most difficult grid after a few iterations.
 
-This shows that, for most sudoku grids, applying these four simple principles in a *systematic* way leads to a solution. When these principles are not sufficient, we just have to make one or two guesses. Who knew sudoku was so simple?
+This shows that, for most sudoku grids, applying these four simple (almost trivial) principles in a *systematic* way lead to a solution. When these principles are not sufficient, we just have to make one or two guesses. Who knew sudoku was so simple?
