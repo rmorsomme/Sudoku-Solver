@@ -1,11 +1,13 @@
-The RMD file presents an algorithm that solves sudoku following two very simple principles:
+In this script, I develop an algorithm to solve sudoku grids that uses four very simple principles. Despite its simplicity, the algorithm can solve most sudoku grids, even the most sparse ones!
 
-- if there is only one value left to fill a cell, fill the cell with it
+- Principle 1: A cell can only have one value.
 
-- if a value has only one possible location left in a row, column or box, write it there.
+- Principle 2: A row/column/box contains each value exactly once.
 
-Surprisingly, by just following these principles, we can solve most sudoku grids.
+- Principle 3: If there is only one value available to fill a cell, fill the cell with it.
 
-When these principles are not sufficient anymore to further complete a grid, then guessing the value of a cell is sufficient to continue filling in the grid.
+- Principle 4: If a value has only one location available in a row/column/box, write it there.
 
-I have not encountered grids that required the algorithm to effectuate more than one guess.
+Yet, for difficult grids, the algorithm can get stuck. When the algorithm is stuck, we need to guess the value of a cell. I updated the original algorithm so that, when it is stuck, it guesses the value of a cell and subsequently checks the validity of the obtained grid. This version of the algorithm solves even the most difficult grid after a few iterations.
+
+This shows that, for most sudoku grids, applying these four simple principles in a systematic way leads to a solution. When these principles are not sufficient, we just have to make one or two guesses. Who knew sudoku was so simple?
