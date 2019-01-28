@@ -33,7 +33,7 @@ library(tidyverse)
 Introduction
 ============
 
-This is a short script presenting a simple algorithm to solve any sudoku grid in a very fast manner. The algorithm follows four very simple principles:
+This is a short script presenting a simple algorithm to solve sudoku grids in a very fast manner. The algorithm follows four very simple principles:
 
 -   Principle 1: A cell has exactly one value.
 
@@ -925,7 +925,7 @@ solve_sudoku(grid_impossible)
 Conclusion
 ==========
 
-In this script, I develop an algorithm to solve sudoku grids that uses four very simple principles.
+In this script, I develop a simple algorithm to solve sudoku grids in a very fast manner. The algorithm follows four very simple principles:
 
 -   Principle 1: A cell has exactly one value.
 
