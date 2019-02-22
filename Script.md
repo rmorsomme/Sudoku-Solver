@@ -1,7 +1,7 @@
 Sudoku
 ================
 Raphaël Morsomme
-2019-01-28
+2019-02-22
 
 -   [Introduction](#introduction)
 -   [Representations](#representations)
